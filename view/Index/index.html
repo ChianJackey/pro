@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>广告管理后台系统</title>
+    {load href="static/layui/css/layui.css"}
+</head>
+<body>
+<div>
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo">广告管理后台系统</div>
+            <!-- 头部区域（可配合layui 已有的水平导航） -->
+            <!--头部导航-->
+            <!-- <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item"><a href="">nav 1</a></li>
+            <li class="layui-nav-item"><a href="">nav 2</a></li>
+            <li class="layui-nav-item"><a href="">nav 3</a></li>
+            <li class="layui-nav-item">
+                <a href="javascript:;">nav groups</a>
+                <dl class="layui-nav-child">
+                <dd><a href="">menu 11</a></dd>
+                <dd><a href="">menu 22</a></dd>
+                <dd><a href="">menu 33</a></dd>
+                </dl>
+            </li>
+            </ul> -->
+        <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+            <img src="http://t.cn/RCzsdCq" class="layui-nav-img">{$name}
+        </li>
+        <li class="layui-nav-item"><a href="javascript:logout()">退了</a></li>
+        </ul>
+    </div>
+  
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree">
+                <li class="layui-nav-item ">
+                    <a class="" href="javascript:;">首页</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:setUrl('admin-getstatistics','{$token}')">今日看板</a></dd>
+                        <!-- <dd><a href="javascript:setUrl('admin-schedule','{$token}')">订单排期</a></dd> -->
+                        <dd><a href="javascript:setUrl('admin-getstatistics','{$token}')">博主排期</a></dd>
+                    </dl>
+                </li>  
+                {foreach $power_info as $val}
+                <li class="layui-nav-item ">
+                    <a class="" href="javascript:;">{$val.name}</a>
+                    <dl class="layui-nav-child">
+                        {foreach $val['child'] as $v}
+                            {if condition="$v.is_menu eq 1"}
+                                <dd><a href="javascript:setUrl('{$v.route}','{$token}')">{$v.name}</a></dd>
+                            {/if}
+                        {/foreach}
+                    </dl>
+                </li>
+                <!-- <li class="layui-nav-item">
+                    <a href="javascript:;">menu group 2</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;">list 2-1</a></dd>
+                        <dd><a href="javascript:;">list 2-2</a></dd>
+                        <dd><a href="">超链接</a></dd>
+                    </dl>
+                </li> -->
+                {/foreach}
+            </ul>
+        </div>
+    </div>
+  
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <iframe src="admin-getstatistics?token={$token}" frameborder="0" id="demoAdmin" style="width: 100%; height:99.5%;" ></iframe>
+    </div>
+  
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        底部固定区域
+    </div>
+</div>
+ 
+{load href="static/layui/layui.js"}
+<script>
+//JavaScript代码区域
+var $
+layui.use('element', function(){
+    $ = layui.jquery;
+    var element = layui.element;
+});
+function setUrl(url,token) {
+    if(url!=''){
+		$('#demoAdmin').attr('src',url+'?token='+token);
+	}
+}
+function logout() {
+    window.location.href = 'admin-login';
+}
+</script>
+</body>
+</html>
