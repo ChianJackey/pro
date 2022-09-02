@@ -16,9 +16,8 @@ class User extends Model
      * 前台登录
      * @param string $account登录账号
      * @param string $password用户密码
-     * @param string $run_type 登录类型 1=小程序，2=后台
      */
-    public static function login($account, $password, $run_type = 1) {
+    public static function login($account, $password) {
         $result = self::getUserInfo(['account' => $account]);
         if (empty($result)) {
             return 506;
@@ -26,15 +25,12 @@ class User extends Model
         $result = $result->toArray();
         $salt = $result['salt'];
         $pass = $result['pass'];
-        if (md5($salt . $password) != $pass) {
+        if (md5($salt . $password . env('LOGIN.RANDOMSTRING')) != $pass) {
             return 507;
-        }
-        if ($result['is_disable'] == 1) {
-            return 508;
         }
         /* 登录成功生成token */
         $token = md5($result['id'] . $result['salt'] . time());
-        UserToken::reSetToken($result['id'], $run_type, $token);
+        UserToken::reSetToken($result['id'], $token);
         return $token;
     }
 

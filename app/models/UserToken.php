@@ -1,30 +1,33 @@
 <?php
 namespace app\models;
 
+use app\common\Redis;
 use app\models\User;
 use think\facade\Config;
 use think\Model;
 
 class UserToken extends Model
 {
-    public static function reSetToken($user_id, $run_type, $token) {
-        $result = UserToken::where(['user_id' => $user_id, 'run_type' => $run_type])->find();
+    /**
+     * 更新token
+     */
+    public static function reSetToken($userId, $token) {
+        $result = UserToken::where(['user_id' => $userId])->find();
         $time = time();
         if ($result == null) {
-            UserToken::create(['user_id' => $user_id, 'run_type' => $run_type, 'token' => $token, 'create_time' => $time]);
+            UserToken::create(['user_id' => $userId, 'token' => $token, 'create_time' => $time]);
         } else {
             $result->token = $token;
             $result->create_time = $time;
             $result->save();
         }
+        $redis = Redis::getRedis();
+        $redis->set('token:'.$token,$userId,Config::get('app.token_expire'));
     }
 
-    public static function checkToken($token, $run_type = 2) {
+    public static function checkToken($token) {
         $result = UserToken::where(['token' => $token])->find();
         if ($result === null) {
-            return false;
-        }
-        if ($result['run_type'] !== $run_type) {
             return false;
         }
         $token_expire = Config::get('app.token_expire'); 
