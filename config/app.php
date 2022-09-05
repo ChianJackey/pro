@@ -34,5 +34,5 @@ return [
     //是否使用redis
     'is_disable_redis' => false,
     'url_html_suffix' => '',
-    'domain' => 'ad.local.com',
+    'domain' => 'local.pro.com',
 ];

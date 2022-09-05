@@ -1,0 +1,164 @@
+{include file="Index/header"}
+<style>
+    .layui-form-item .layui-input-inline{
+        width: 240px;
+    }
+    .layui-form-item .layui-inline {
+        margin-right: 25%;
+    }
+</style>
+<body style="width: 98%;margin:0 auto">
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+        <legend id="student_info"><b>产品信息</b></legend>
+    </fieldset>
+    <form class="layui-form" action="">
+        <input name="id" type="hidden" value="{$monitor_info['id']}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">输入框</label>
+            <div class="layui-input-block">
+                <input style="width: 68%;" value="{$monitor_info['name']}" type="text" name="name" placeholder="请输入标题" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea style="width: 68%;resize:none;" placeholder="请输入内容" class="layui-textarea" name="remark">{$monitor_info['remark']}</textarea>
+            </div>
+        </div>
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend id="student_info"><b>重定向连接</b></legend>
+        </fieldset>
+        <legend><button onclick="addLinkPop({$monitor_info['id']})" type="button" class="layui-btn layui-btn-primary">新增连接</button></legend>
+        <table class="layui-table">
+            <colgroup>
+                <col>
+                <col>
+                <col>
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>重定向连接</th>
+                    <th>量级(为0不限制)</th>
+                    <th>权重(数字越大越高)</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="redirect">
+                {foreach $redirect_list as $val}
+                <tr id="redirect_{$val['id']}">
+                    <td><input disabled value="{$val['id']}" type="text" name="monitor_id[]" class="layui-input"></td>
+                    <td><input value="{$val['redirect_link']}" type="text" name="redirect_link[]" class="layui-input"></td>
+                    <td><input value="{$val['num']}" type="text" name="num[]" autocomplete="off" class="layui-input"></td>
+                    <td><input value="{$val['rank']}" type="text" name="rank[]" autocomplete="off" class="layui-input"></td>
+                    <td><button type="button" onclick="dele({$val['id']})" class="layui-btn-primary layui-btn layui-btn-xs">删除</button></td>
+                </tr>
+                {/foreach}
+            </tbody>
+        </table>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn layui-btn-normal" lay-submit="" lay-filter="preserve">保存</button>
+            </div>
+        </div>
+    </form>
+<script>
+    var table;
+    var tableIns;
+    var form;
+    var layer;
+    layui.use(['form', 'layedit', 'laydate'], function(){
+        $ = layui.jquery;
+        table = layui.table;
+        form = layui.form;
+        layer = layui.layer;
+        form.on('submit(preserve)', function(data){
+            $.ajax({
+                type: 'post',
+                url: 'save-redirect',
+                data: data.field,
+                success: function(res){
+                    if(res.code == 200){
+                        layer.msg('修改成功', {icon: 1});
+                        window.location.replace('/monitor-link');
+                    }else{
+                        layer.msg('修改失败', {time:2000,icon:5,anim:6});
+                    }
+                }
+            })
+        })
+    })
+
+    function addLinkPop(linkId){
+        var url = '<div class="layui-form-item"><label class="layui-form-label">连接</label><div class="layui-input-block"><input style="width: 80%;" value="" type="text" name="redirect_link[]" placeholder="请输入连接" autocomplete="off" class="url layui-input"></div></div>';
+        var num = '<div class="layui-form-item"><label class="layui-form-label">量级</label><div class="layui-input-block"><input style="width: 80%;" value="" type="number" name="num[]" placeholder="请输入量级" autocomplete="off" class="num layui-input"></div></div>';
+        var rank = '<div class="layui-form-item"><label class="layui-form-label">权重</label><div class="layui-input-block"><input style="width: 80%;" value="" type="number" name="rank[]" placeholder="请输入权重" autocomplete="off" class="rank layui-input"></div></div>';
+        var button = '<div class="layui-form-item"><div class="layui-input-block"><button type="button" class="layui-btn layui-btn-normal" onclick="addLink(' + linkId + ')" lay-filter="preserve">保存</button></div></div>';
+        var from = '<div name="tt" style="margin-top:10px">' + url + num + rank + button +'</div>';
+        layer.open({
+            type: 1,
+            title: '新增连接',
+            skin: 'layui-layer-rim', //加上边框
+            area: ['420px', '300px'], //宽高
+            content: from
+        })
+    }
+
+    function addLink(linkId){
+        var redirect_link = $('.url:last').val();
+        var num = $('.num:last').val();
+        var rank = $('.rank:last').val();
+        if(!redirect_link || !num || !rank){
+            layer.msg('参数不能为空', {time:2000,icon:5,anim:6});
+        }
+        $.ajax({
+            type: 'post',
+            url: 'add-redirect',
+            data: {redirect_link:redirect_link,num:num,rank:rank,monitor_id:linkId},
+            success: function(res){
+                if(res.code == 200){
+                    var id = res.data.id;
+                    var html = '<tr redirect_' + id + '>';
+                    html += '<td><input disabled value="'+id+'" type="text" name="monitor_id[]" class="layui-input"></td>';
+                    html += '<td><input value="'+redirect_link+'" type="text" name="redirect_link[]" class="layui-input"></td>';
+                    html += '<td><input value="'+num+'" type="text" name="num[]" class="layui-input"></td>';
+                    html += '<td><input value="'+rank+'" type="text" name="rank[]" autocomplete="off" class="layui-input"></td>';
+                    html += '<td><button type="button" onclick="dele('+id+')" class="layui-btn-primary layui-btn layui-btn-xs">删除</button></td></tr>';
+                    $('#redirect').prepend(html);
+                    layer.closeAll();
+                    form.render();
+                    layer.msg('添加成功', {icon: 1});
+                }else{
+                    layer.msg('添加失败', {time:2000,icon:5,anim:6});
+                }
+            }
+        })
+    }
+
+    function dele(id){
+        if($('#redirect>tr').length == 1){
+            layer.msg('只剩一条重定向链接不允许删除', {time:2000,icon:5,anim:6});
+            return;
+        }
+        layer.confirm('确定删除',
+            {btn: ['确定','取消'],title:'提示'},
+            function(){
+                $.ajax({
+                    type:'post',
+                    url: 'dele-redirect',
+                    data: {id:id},
+                    success: function(res){
+                        layer.msg('删除成功', {icon: 1});
+                        $('#redirect_'+id).remove();
+                    }
+                })
+            },
+            function(){
+
+            }
+        )
+    }
+
+</script>
+</body>
+</html>

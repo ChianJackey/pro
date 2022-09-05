@@ -10,10 +10,8 @@ use \think\facade\Config;
 function getRsp(int $code = 200, $data = '', $count = 0) {
     $error_code = Config::get('error_code');
     $message = isset($error_code[$code]) ? $error_code[$code] : '';
-    $data = ['code' => $code, 'message' => $message, 'data' => $data];
-    if ($count > 0) {
-        $data['count'] = $count;
-    }
+    $data = ['code' => $code, 'msg' => $message, 'data' => $data];
+    $data['count'] = $count > 0 ? $count : 0;
     return json($data);
 }
 
@@ -32,30 +30,6 @@ function createRandomString($length = 24) {
     return $string;
 }
 
-/**
- * 调试返回
- */
-function R($param) {
-    if (is_array($param)) {
-        return json($param);
-    }
-    return json(['data' => $param]);
-}
-
-function checkDir($dir) {
-    if ($handle = @opendir($dir)) {
-    while (($file = readdir($handle)) !== false) {
-        if (($file == ".") || ($file == "..")) {
-           continue;
-        }
-        if (is_dir($dir . '/' . $file)) {
-           // 递归
-           checkDir($dir . '/' . $file);
-        } else {
-           unlink($dir . '/' . $file);
-        }
-     }
-    @closedir($handle);
-    rmdir ($dir);
-   }
+function createUrl(){
+    return 'www.baidu.com';
 }

@@ -10,10 +10,20 @@
 // +----------------------------------------------------------------------
 use think\facade\Route;
 
-Route::any('login', 'admin.Index/login');
+
+Route::get('login', 'index/login');
+Route::post('login-in', 'index/login');
+Route::get('index', 'index/index');
 //API
-Route::post('login', 'api.UsersController/login');                           //用户登录
 Route::group(function(){
-    Route::get('order-list', 'api.OrderController/orderList');                  //广告排期-订单列表
-    Route::post('create-order', 'api.OrderController/createOrder');             //广告排期-添加&编辑订单
-})->middleware(app\middleware\CheckToken::class, 1);
+    Route::any('monitor-link', 'index/monitorLink');
+    Route::any('monitor-detail', 'index/monitorDetail');
+    Route::post('dele-monitor', 'index/deleMonitor');
+    Route::post('add-redirect', 'index/addRedirect');
+    Route::post('add-monitor', 'index/addMonitor');
+    Route::post('dele-redirect', 'index/deleRedirect');
+    Route::post('save-redirect', 'index/saveRedirect');
+    Route::get('redorect-record', 'index/redorectRecord');
+});
+
+//->middleware(app\middleware\CheckToken::class)

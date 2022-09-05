@@ -4,6 +4,7 @@ namespace app\models;
 use think\Model;
 use app\models\UserToken;
 use think\facade\Config;
+use app\common\Redis;
 use think\facade\Db;
 
 class User extends Model
@@ -17,7 +18,7 @@ class User extends Model
      * @param string $account登录账号
      * @param string $password用户密码
      */
-    public static function login($account, $password) {
+    public static function login($account, $password){
         $result = self::getUserInfo(['account' => $account]);
         if (empty($result)) {
             return 506;
@@ -25,7 +26,7 @@ class User extends Model
         $result = $result->toArray();
         $salt = $result['salt'];
         $pass = $result['pass'];
-        if (md5($salt . $password . env('LOGIN.RANDOMSTRING')) != $pass) {
+        if(md5($salt . $password . env('LOGIN.RANDOMSTRING')) != $pass){
             return 507;
         }
         /* 登录成功生成token */
@@ -37,26 +38,20 @@ class User extends Model
     /**
      * 验证用户是否登录
      * @param string $token
-     * @return bool|array is_login|user_info
+     * @return bool
      */
-    public static function checkLogin($token, $run_type = 2){
-        $result = Db::name('user')->alias('u')
-            ->field('u.*,ut.token')
-            ->join('user_token ut', 'u.id = ut.user_id')
-            ->where(['ut.token' => $token, 'ut.run_type' => $run_type])
-            ->select()->toArray();
-        if (!empty($result)) {
-            $result = $result[0];
-            if ($result['token'] == null) {
+    public static function checkLogin($token){
+        $userId = $redis->get('token:' . $token);
+        if(!$userId){
+            $result = UserToken::where(['token' => $token])->find();
+            if(!$result){
                 return false;
             }
-            $token_expire = Config::get('app.token_expire');
-            if ($result['create_time'] + $token_expire < time()) {
-                return false;
-            }
-            unset($result['pass'], $result['is_disable'], $result['salt'], $result['run_type']);
-            return $result;
+            $result = $result->toArray();
+            $userId = $result['user_id'];
+
         }
+
         return false;
     }
 

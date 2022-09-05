@@ -2,16 +2,198 @@
 namespace app\controller;
 
 use app\BaseController;
+use think\Request;
+use think\facade\View;
+use app\models\User;
+use app\models\UserToken;
+use think\facade\Config;
+use app\models\MonitorLink;
+use app\models\RedirectLink;
+use app\models\RedorectRecord;
 
 class Index extends BaseController
 {
-    public function index()
-    {
-        return '<style type="text/css">*{ padding: 0; margin: 0; } div{ padding: 4px 48px;} a{color:#2E5CD5;cursor: pointer;text-decoration: none} a:hover{text-decoration:underline; } body{ background: #fff; font-family: "Century Gothic","Microsoft yahei"; color: #333;font-size:18px;} h1{ font-size: 100px; font-weight: normal; margin-bottom: 12px; } p{ line-height: 1.6em; font-size: 42px }</style><div style="padding: 24px 48px;"> <h1>:) </h1><p> ThinkPHP V' . \think\facade\App::version() . '<br/><span style="font-size:30px;">14载初心不改 - 你值得信赖的PHP框架</span></p><span style="font-size:25px;">[ V6.0 版本由 <a href="https://www.yisu.com/" target="yisu">亿速云</a> 独家赞助发布 ]</span></div><script type="text/javascript" src="https://tajs.qq.com/stats?sId=64890268" charset="UTF-8"></script><script type="text/javascript" src="https://e.topthink.com/Public/static/client.js"></script><think id="ee9b1aa918103c4fc"></think>';
+    /**
+     * @param string account 登录账号
+     * @param string pass 密码
+     */
+    public function login(Request $request){
+        if($request->method() == 'GET'){
+            return View::fetch('Index/login');
+        }else{
+            $checkField = ['account' => '""@length:2,10', 'pass' => '""@length:6,20'];
+            if(!checkValue($response, $checkField)){
+                return $response;
+            }
+            $result = User::login($checkField['account'], $checkField['pass']);
+            return redirect((string) url('index', ['token' => $result]));
+        }
     }
 
-    public function hello($name = 'ThinkPHP6')
-    {
-        return 'hello,' . $name;
+    public function index(Request $request){
+        $token = $request->get('token', '');
+        if($token === ''){
+            return redirect((string) url('/login'));
+        }
+        $result = UserToken::checkToken($token);
+        if(!$result){
+            return redirect((string) url('/login'));
+        }
+        $power = Config::get('rule');
+        return View::fetch('Index/index', ['token' => $token, 'power' => $power]);
+    }
+
+    public function monitorLink(Request $request){
+        if($request->method() == 'GET'){
+            $fieldNull = [
+                'page'         => '0@min:1'
+            ];
+            $checkField = [];
+            if (!checkValue($response, $checkField, false, $fieldNull)) {
+                return $response;
+            }
+            $token = request()->param('token');
+            return View::fetch('Index/monitor_link', ['token' => $token]);
+        }else{
+            $page = $request->post('page', 1);
+            if(!is_numeric($page) || $page <= 0){
+                $page = 1;
+            }
+            $result = MonitorLink::getMonitorLinkList($page);
+            $count = MonitorLink::getMonitorLinkCount();
+            return getRsp(0, $result, $count);
+        }
+    }
+
+    public function monitorDetail(Request $request){
+        if($request->method() == 'GET'){
+            $checkField = [
+                'id'         => '0@min:1'
+            ];
+            if(!checkValue($response, $checkField)){
+                return $response;
+            }
+            $monitorInfo = MonitorLink::getMonitorLinkDetail($checkField['id']);
+            $redirectList = RedirectLink::getRedirectLinkList($checkField['id']);
+            return View::fetch('Index/monitor_detail', ['monitor_info' => $monitorInfo, 'redirect_list' => $redirectList]);
+        }
+    }
+
+    public function deleMonitor(Request $request){
+        if($request->method() == 'POST'){
+            $checkField = [
+                'id'         => '0@min:1'
+            ];
+            if(!checkValue($response, $checkField)){
+                return $response;
+            }
+            MonitorLink::deleMonitorLink($checkField['id']);
+        }
+        return getRsp(200);
+    }
+
+    public function addRedirect(Request $request){
+        if($request->method() == 'POST'){
+            $checkField = [
+                'monitor_id'           => '0@min:1',
+                'redirect_link'     => '""@long:800',
+                'num'               => '0@between:0,1000000',
+                'rank'              => '0@between:0,1000000'
+            ];
+            if(!checkValue($response, $checkField)){
+                return $response;
+            }
+            $checkField['create_time'] = time();
+            $id = RedirectLink::addRedirectLink($checkField);
+            return getRsp(200, ['id' => $id]);
+        }
+    }
+
+    public function deleRedirect(Request $request){
+        if($request->method() == 'POST'){
+            $checkField = [
+                'id'         => '0@min:1'
+            ];
+            if(!checkValue($response, $checkField)){
+                return $response;
+            }
+            RedirectLink::deleRedirectLink($checkField['id']);
+        }
+        return getRsp(200);
+    }
+
+    public function saveRedirect(Request $request){
+        if($request->method() == 'POST'){
+            $redirectLink = $request->post('redirect_link', []);
+            $id = $request->post('monitor_id', []);
+            $rank = $request->post('rank', []);
+            $num = $request->post('num', []);
+            $id = $request->post('id');
+            $name = $request->post('name');
+            $remark = $request->post('remark');
+            if(!empty($num)){
+                $data = [];
+                foreach($num as $key => $val){
+                    $temp = [
+                        'id' => isset($id[$key]) ? $id[$key] : 0,
+                        'redirect_link' => isset($redirectLink[$key]) ? $redirectLink[$key] : 0,
+                        'num' => isset($num[$key]) ? $num[$key] : 0,
+                        'rank' => isset($rank[$key]) ? $rank[$key] : 0,
+                    ];
+                    $data[] = $temp;
+                }
+                RedirectLink::saveRedirectLink($data);
+            }
+            MonitorLink::saveMonitorLink($id, ['name' => $name, 'remark' => $remark]);
+        }
+        return getRsp(200);
+    }
+
+    public function addMonitor(Request $request){
+        if($request->method() == 'POST'){
+            $checkField = [
+                'redirect_link'     => '""@long:800',
+                'num'               => '0@between:0,1000000',
+                'rank'              => '0@between:0,1000000',
+                'name'              => '""@long:48',
+                'remark'            => '""@long:240',
+            ];
+            if(!checkValue($response, $checkField)){
+                return $response;
+            }
+            $monitorLink = [
+                'monitor_link' => createUrl(),
+                'name' => $checkField['name'],
+                'remark' => $checkField['remark'],
+                'create_time' => time()
+            ];
+            $id = MonitorLink::addMonitorLink($monitorLink);
+            $redirectLink = [
+                'monitor_id' => $id,
+                'redirect_link' => $checkField['redirect_link'],
+                'num' => $checkField['num'],
+                'rank' => $checkField['rank'],
+                'create_time' => time()
+            ];
+            $res = RedirectLink::addRedirectLink($redirectLink);
+        }
+        return getRsp(200);
+    }
+
+    public function redorectRecord(Request $request){
+        if($request->method() == 'GET'){
+            $fieldNull = [
+                'end_date'    => date('Y-m-d',strtotime("-7 day")).'@eq:10',
+                'start_date'    => date('Y-m-d',time()).'@eq:10',
+                'redirect_link' => '""@length:1,300',
+                'page'          => '1@min:1'
+            ];
+            $checkField = [];
+            if (!checkValue($response, $checkField, false, $fieldNull)) {
+                return $response;
+            }
+            $result = RedorectRecord::getRedorectRecord([],1);
+            return json($checkField);
+        }
     }
 }

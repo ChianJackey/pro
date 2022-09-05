@@ -27,6 +27,7 @@ function checkValue(&$response, &$data, $check_null = false, $field_null = [], $
                 $tips = $error_data[$key];
             }
         }
+        //请求中是否有验证数组的key对应的值
         $value = isset($request_data[$key]) ? $request_data[$key] : '';
         $value_len = is_array($value)?count($value):strlen($value);
         if ($value_len == 0 && $check_null === false && !isset($field_null[$key])) {
@@ -46,14 +47,20 @@ function checkValue(&$response, &$data, $check_null = false, $field_null = [], $
                     return false;
                 }
             }
+
             $result = checkIllegal($val, $value, $key, $tips);
             if ($result === false) {
                 $response = $val;
                 return false;
             }
         } else {
-            $value = is_numeric($variable) ? 0 : '';
+            if(isset($field_null[$key]) && is_string($variable) && $variable !== ''){
+                $value = $variable;
+            }else{
+                $value = is_numeric($variable) ? 0 : '';
+            }
         }
+
         $data[$key] = $value;
     }
     return true;
@@ -65,6 +72,7 @@ function checkValue(&$response, &$data, $check_null = false, $field_null = [], $
  * @param string|array $check_value 验证的值
  * @param string $param_name 参数名称 包含time字段额外进行时间格式验证
  * @example length:2,10|max:10
+ * @example ""@length:20 字符串类型长度为20  0@min:1 数值类型最小为1
  * @example max:最大值,min:最小值,length:长度区间,between:数值大小区间,long:字符串最大长度,eq:字符串长度,in:参数在中间
  */
 function checkIllegal(&$rule_val, &$check_value, $param_name, $tips) {

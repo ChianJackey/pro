@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace app\middleware;
 
 use think\Request;
-use app\models\User;
+use app\models\UserToken;
 
 class CheckToken
 {
@@ -14,31 +14,18 @@ class CheckToken
      * @param \Closure       $next
      * @return Response
      */
-    public function handle($request, \Closure $next, $run_type) {
-        $hearer = $request->header();
-        $get = $request->get();
-        if ($run_type == 1) {
-            $response = getRsp(509);
-        } else {
-            $response = redirect((string) url('/admin-login'));
-        }
-        if (isset($hearer['authorization']) || isset($get['token']) || isset($hearer['token'])) {
-            if((isset($hearer['token']) && !empty($hearer['token'])) || (isset($hearer['authorization']) && !empty($hearer['authorization'])) || (isset($get['token']) && !empty($get['token']))) {
-                if (isset($hearer['token'])) {
-                    $token = $hearer['token'];
-                } else if (isset($hearer['authorization'])) {
-                    $token = $hearer['authorization'];
-                } else {
-                    $token = $get['token'];
-                }
-                $result = User::checkLogin($token, $run_type);
-                if (!$result) {
-                    return $response;
-                }
-                $request->user_info = $result;
-            }
-            return $next($request);
-        }
-        return $response;
+    public function handle($request, \Closure $next) {
+        // $get = $request->get();
+        // $response = redirect((string) url('login'));
+        // if(isset($get['token'])) {
+        //     $token = $hearer['token'];
+        //     $result = UserToken::checkToken($token);
+        //     if (!$result) {
+        //         return $response;
+        //     }
+        //     return $next($request);
+        // }
+        // return $response;
+        return $next($request);
     }
 }

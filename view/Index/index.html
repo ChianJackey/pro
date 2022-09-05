@@ -4,9 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>广告管理后台系统</title>
-    {load href="static/layui/css/layui.css"}
+    {load href="/static/layui/css/layui.css"}
+    <style>
+        html{overflow:hidden}
+    </style>
 </head>
-<body>
+<body style="overflow:scroll;overflow-y:hidden;">
 <div>
     <div class="layui-layout layui-layout-admin">
         <div class="layui-header">
@@ -28,34 +31,39 @@
             </ul> -->
         <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item">
-            <img src="http://t.cn/RCzsdCq" class="layui-nav-img">{$name}
+            <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
         </li>
         <li class="layui-nav-item"><a href="javascript:logout()">退了</a></li>
         </ul>
     </div>
-  
+
     <div class="layui-side layui-bg-black">
         <div class="layui-side-scroll">
             <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
             <ul class="layui-nav layui-nav-tree">
-                <li class="layui-nav-item ">
+                <!-- <li class="layui-nav-item ">
                     <a class="" href="javascript:;">首页</a>
                     <dl class="layui-nav-child">
                         <dd><a href="javascript:setUrl('admin-getstatistics','{$token}')">今日看板</a></dd>
-                        <!-- <dd><a href="javascript:setUrl('admin-schedule','{$token}')">订单排期</a></dd> -->
                         <dd><a href="javascript:setUrl('admin-getstatistics','{$token}')">博主排期</a></dd>
                     </dl>
-                </li>  
-                {foreach $power_info as $val}
-                <li class="layui-nav-item ">
-                    <a class="" href="javascript:;">{$val.name}</a>
-                    <dl class="layui-nav-child">
-                        {foreach $val['child'] as $v}
-                            {if condition="$v.is_menu eq 1"}
-                                <dd><a href="javascript:setUrl('{$v.route}','{$token}')">{$v.name}</a></dd>
-                            {/if}
-                        {/foreach}
-                    </dl>
+                </li> -->
+                {foreach $power as $key => $val}
+                {if condition="$key eq 0"}
+                    <li class="layui-nav-item layui-this">
+                {else /}
+                    <li class="layui-nav-item ">
+                {/if}
+                    <a class="" href="javascript:setUrl('{$val.route}','{$token}');">{$val.name}</a>
+                    {if condition="!empty($val.child)"}
+                        <dl class="layui-nav-child">
+                            {foreach $val['child'] as $v}
+                                {if condition="$v.is_menu eq 1"}
+                                    <dd><a href="javascript:setUrl('{$v.route}','{$token}')">{$v.name}</a></dd>
+                                {/if}
+                            {/foreach}
+                        </dl>
+                    {/if}
                 </li>
                 <!-- <li class="layui-nav-item">
                     <a href="javascript:;">menu group 2</a>
@@ -69,19 +77,19 @@
             </ul>
         </div>
     </div>
-  
+
     <div class="layui-body">
         <!-- 内容主体区域 -->
-        <iframe src="admin-getstatistics?token={$token}" frameborder="0" id="demoAdmin" style="width: 100%; height:99.5%;" ></iframe>
+        <iframe src="/monitor-link?token={$token}" frameborder="0" id="demoAdmin" style="width: 100%; height:99.5%;" ></iframe>
     </div>
-  
+
     <div class="layui-footer">
         <!-- 底部固定区域 -->
         底部固定区域
     </div>
 </div>
- 
-{load href="static/layui/layui.js"}
+
+{load href="/static/layui/layui.js"}
 <script>
 //JavaScript代码区域
 var $
@@ -95,7 +103,7 @@ function setUrl(url,token) {
 	}
 }
 function logout() {
-    window.location.href = 'admin-login';
+    window.location.href = '/login';
 }
 </script>
 </body>

@@ -22,19 +22,17 @@ class UserToken extends Model
             $result->save();
         }
         $redis = Redis::getRedis();
-        $redis->set('token:'.$token,$userId,Config::get('app.token_expire'));
+        $redis->set('token:' . $token,$userId,Config::get('app.token_expire'));
     }
 
     public static function checkToken($token) {
-        $result = UserToken::where(['token' => $token])->find();
-        if ($result === null) {
+        $redis = Redis::getRedis();
+        $userId = $redis->get('token:' . $token);
+        if(!$userId){
             return false;
         }
-        $token_expire = Config::get('app.token_expire'); 
-        if ($result['create_time'] + $token_expire < time()) {
-            return false;
-        }
-        return User::getUserInfo(['id' => $result['user_id']]);
+        $redis->set('token:' . $token,$userId,Config::get('app.token_expire'));
+        return true;
     }
 
 }
