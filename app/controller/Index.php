@@ -175,7 +175,7 @@ class Index extends BaseController
                 'rank' => $checkField['rank'],
                 'create_time' => time()
             ];
-            $res = RedirectLink::addRedirectLink($redirectLink);
+            RedirectLink::addRedirectLink($redirectLink);
         }
         return getRsp(200);
     }
@@ -183,8 +183,8 @@ class Index extends BaseController
     public function redorectRecord(Request $request){
         if($request->method() == 'GET'){
             $fieldNull = [
-                'end_date'    => date('Y-m-d',strtotime("-7 day")).'@eq:10',
-                'start_date'    => date('Y-m-d',time()).'@eq:10',
+                'end_date'    => '""@eq:10',
+                'start_date'    => '""@eq:10',
                 'redirect_link' => '""@length:1,300',
                 'page'          => '1@min:1'
             ];
@@ -192,8 +192,15 @@ class Index extends BaseController
             if (!checkValue($response, $checkField, false, $fieldNull)) {
                 return $response;
             }
-            $result = RedorectRecord::getRedorectRecord([],1);
-            return json($checkField);
+            $where = [];
+            if(!empty($checkField['start_date']) && !empty($checkField['end_date'])){
+                $where[] = ['date', 'between', [$checkField['start_date'], $checkField['end_date']]];
+            }
+            if(!empty($checkField['redirect_link'])){
+                $where[] = ['redirect_link', 'like', [$checkField['redirect_link'] . '%']];
+            }
+            $result = RedorectRecord::getRedorectRecord($where,$checkField['page']);
+            return View::fetch('Index/redorect_record');
         }
     }
 }

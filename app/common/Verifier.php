@@ -30,14 +30,18 @@ function checkValue(&$response, &$data, $check_null = false, $field_null = [], $
         //请求中是否有验证数组的key对应的值
         $value = isset($request_data[$key]) ? $request_data[$key] : '';
         $value_len = is_array($value)?count($value):strlen($value);
+        //参数值为空，并且参数不在field_null里面抛出错误
         if ($value_len == 0 && $check_null === false && !isset($field_null[$key])) {
             $response = getRsp(PARAM_ERR_CODE, $tips . ' 不能为空 !');
             return false;
         }
+        //变量名称
         $variable = substr($val, 0, stripos($val, '@'));
+        //验证规则
         $val = substr($val, stripos($val, '@') + 1);
-        //该参数有值，或者不在非空数组里则验证,否则给默认值
-        if (!isset($field_null[$key]) || $value_len > 0) {
+        //该参数有值则验证，否则给默认值
+        if ($value_len > 0) {
+            //验证数字与浮点类型
             if (is_numeric($variable) && $variable !== '') {
                 if ((strstr($variable, '.') && !strstr($value, '.')) || (!is_numeric($value) && strstr($variable, '.'))) {
                     $response = getRsp(PARAM_ERR_CODE, $tips . ' 不是浮点 !');
@@ -47,14 +51,13 @@ function checkValue(&$response, &$data, $check_null = false, $field_null = [], $
                     return false;
                 }
             }
-
-            $result = checkIllegal($val, $value, $key, $tips);
+            $result = checkIllegal($val, $value, $key, $tips, isset($field_null[$key]));
             if ($result === false) {
                 $response = $val;
                 return false;
             }
         } else {
-            if(isset($field_null[$key]) && is_string($variable) && $variable !== ''){
+            if(isset($field_null[$key]) && is_string($variable) && $variable !== '""'){
                 $value = $variable;
             }else{
                 $value = is_numeric($variable) ? 0 : '';
@@ -71,11 +74,12 @@ function checkValue(&$response, &$data, $check_null = false, $field_null = [], $
  * @param string $rule_val 验证的名称与规则  length:5,10
  * @param string|array $check_value 验证的值
  * @param string $param_name 参数名称 包含time字段额外进行时间格式验证
+ * @param bool $is_null 是否为空 如果未false则有值才认证
  * @example length:2,10|max:10
  * @example ""@length:20 字符串类型长度为20  0@min:1 数值类型最小为1
  * @example max:最大值,min:最小值,length:长度区间,between:数值大小区间,long:字符串最大长度,eq:字符串长度,in:参数在中间
  */
-function checkIllegal(&$rule_val, &$check_value, $param_name, $tips) {
+function checkIllegal(&$rule_val, &$check_value, $param_name, $tips, $is_null) {
     foreach (explode('|', $rule_val) as $rule_arr) {
         $rule_arr = explode(':', $rule_arr);
         if ($rule_arr[0] == 'length') {
