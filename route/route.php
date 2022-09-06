@@ -24,6 +24,7 @@ Route::group(function(){
     Route::post('dele-redirect', 'index/deleRedirect');
     Route::post('save-redirect', 'index/saveRedirect');
     Route::get('redorect-record', 'index/redorectRecord');
+    Route::post('redorect-record', 'index/redorectRecord');
 });
 
 //->middleware(app\middleware\CheckToken::class)

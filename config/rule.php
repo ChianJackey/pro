@@ -11,7 +11,7 @@ return [
         'ppid' => 2,
         'name' => '数据报表',
         'is_menu' => 1,
-        'route' => '/statistics',
+        'route' => '/redorect-record',
         'child' => []
     ]
 ];

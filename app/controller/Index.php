@@ -182,6 +182,10 @@ class Index extends BaseController
 
     public function redorectRecord(Request $request){
         if($request->method() == 'GET'){
+            $startDate = date("Y-m-d", strtotime("-7 day"));
+            $endDate = date('Y-m-d', time());
+            return View::fetch('Index/redorect_record', ['start' => $startDate, 'end' => $endDate]);
+        }else{
             $fieldNull = [
                 'end_date'    => '""@eq:10',
                 'start_date'    => '""@eq:10',
@@ -200,7 +204,8 @@ class Index extends BaseController
                 $where[] = ['redirect_link', 'like', [$checkField['redirect_link'] . '%']];
             }
             $result = RedorectRecord::getRedorectRecord($where,$checkField['page']);
-            return View::fetch('Index/redorect_record');
+            $count = RedorectRecord::getRedorectRecordCount($where);
+            return getRsp(0, $result, $count);;
         }
     }
 }

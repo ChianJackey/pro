@@ -1,0 +1,65 @@
+{include file="Index/header"}
+<body style="width: 98%;margin:0 auto">
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+        <legend id="student_info">数据报表列表</legend>
+    </fieldset>
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"></label>
+                <div class="layui-input-inline" style="width: 200px;">
+                    <input value="{$start}" type="date" name="start_date" placeholder="开始日期" autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid">-</div>
+                <div class="layui-input-inline" style="width: 200px;">
+                    <input value="{$end}" type="date" name="end_date" placeholder="结束日期" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">跳转链接</label>
+                <div class="layui-input-inline" style="width: 200px;">
+                    <input type="text" name="redirect_link" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label"></label>
+                <div class="layui-input-inline" style="width: 100px;">
+                    <button type="button" class="layui-btn layui-btn-primary" lay-submit="" lay-filter="search">查询</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <table class="layui-hide" lay-data="{id: 'idTest'}" id="data"></table>
+    <script language="JavaScript" type="text/javascript">
+        var table;
+        var tableIns;
+        var form;
+        var layer;
+        layui.use(['table','layer','form'], function(){
+            $ = layui.jquery;
+            table = layui.table;
+            form = layui.form;
+            layer = layui.layer;
+            tableIns = table.render({
+                where: {start_date: $('input').eq(0).val(), end_date:$('input').eq(1).val()},
+                elem: '#data',
+                url: 'redorect-record',
+                page: true,
+                method: 'post',
+                limit: 10,
+                limits: [10],
+                cols: [[
+                    {field:'date', align:'center', title:'日期', unresize: true},
+                    {field:'redirect_link', align:'center', title:'跳转链接', unresize: true},
+                    {field:'num', align:'center', title:'曝光量级', unresize: true}
+                ]]
+            })
+            form.on('submit(search)',function(data){
+                formData = data.field;
+                tableIns.reload({where:formData,page: {curr: 1}});
+                return false;
+            })
+        })
+    </script>
+</body>
+</html>

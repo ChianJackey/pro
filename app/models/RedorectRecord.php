@@ -19,4 +19,12 @@ class RedorectRecord extends Model
             ->select()
             ->toArray();
     }
+
+    public static function getRedorectRecordCount($params){
+        return RedorectRecord::alias('a')
+            ->where($params)
+            ->field('a.num,a.date,b.redirect_link')
+            ->join('redirect_link b','a.redirect_id=b.id')
+            ->count();
+    }
 }
