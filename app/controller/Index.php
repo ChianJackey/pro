@@ -182,7 +182,8 @@ class Index extends BaseController
         if($request->method() == 'GET'){
             $startDate = date("Y-m-d", strtotime("-7 day"));
             $endDate = date('Y-m-d', time());
-            return View::fetch('Index/redorect_record', ['start' => $startDate, 'end' => $endDate]);
+            $linkList = RedirectLink::getSelectLink();
+            return View::fetch('Index/redorect_record', ['start' => $startDate, 'end' => $endDate, 'link_list' => $linkList]);
         }else{
             $fieldNull = [
                 'end_date'      => '""@eq:10',

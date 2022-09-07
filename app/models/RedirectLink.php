@@ -35,6 +35,15 @@ class RedirectLink extends Model
         }
     }
 
+    public static function getSelectLink(){
+        return RedirectLink::where(['is_delete' => 0])
+            ->field('redirect_link')
+            ->order('id desc')
+            ->group('redirect_link')
+            ->select()
+            ->toArray();
+    }
+
     public static function getRedirectLink($monitorId){
         return RedirectLink::alias('a')
             ->leftjoin('redorect_record b','a.id = b.redirect_id and b.date = "'.date('Y-m-d',time()).'"')

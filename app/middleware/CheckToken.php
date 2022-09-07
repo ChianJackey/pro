@@ -16,17 +16,15 @@ class CheckToken
      */
     public function handle($request, \Closure $next) {
         $get = $request->get();
-        $response = redirect((string) url('login'));
-        return $response;
+        $response = redirect((string) url('/login'));
         if(isset($get['token'])) {
-            $token = $hearer['token'];
+            $token = $get['token'];
             $result = UserToken::checkToken($token);
             if (!$result) {
                 return $response;
             }
             return $next($request);
         }
-        return $response;
-        //return $next($request);
+        return $next($request);
     }
 }
