@@ -27,4 +27,14 @@ class RedorectRecord extends Model
             ->join('redirect_link b','a.redirect_id=b.id')
             ->count();
     }
+
+    public static function increasingNum($redirectId){
+        $record = RedorectRecord::where(['redirect_id' => $redirectId])->find();
+        if($record == null){
+            RedorectRecord::create(['redirect_id' => $redirectId, 'num' => 1, 'date' => date('Y-m-d', time())]);
+        }else{
+            $record->num = $record->num + 1;
+            $record->save();
+        }
+    } 
 }

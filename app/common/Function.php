@@ -23,13 +23,17 @@ function createRandomString($length = 24) {
     $string = '';
     $chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     $char_len = strlen($chars);
-    for($i=0; $i < $length; $i++) {
+    for($i = 0; $i < $length; $i++) {
         $loop = mt_rand(0, ($char_len-1));
         $string .= $chars[$loop];
     }
     return $string;
 }
 
-function createUrl(){
-    return 'www.baidu.com';
+function createUrl($flag){
+    return env('DOMAIN','') . 'skip/' . $flag;
+}
+
+function createMonitorFlag(){
+    return createRandomString(24);
 }

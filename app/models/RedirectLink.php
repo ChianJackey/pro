@@ -2,7 +2,6 @@
 namespace app\models;
 
 use think\Model;
-use think\facade\Db;
 
 /**
  * @mixin \think\Model
@@ -34,6 +33,19 @@ class RedirectLink extends Model
                     'rank' => $val['rank']
                 ]);
         }
+    }
+
+    public static function getRedirectLink($monitorId){
+        return RedirectLink::alias('a')
+            ->leftjoin('redorect_record b','a.id = b.redirect_id and b.date = "'.date('Y-m-d',time()).'"')
+            ->where(['a.monitor_id' => $monitorId, 'a.is_delete' => 0])
+            ->field('a.id,a.redirect_link,a.num,a.rank,b.num as redirect_num')
+            ->select()
+            ->toArray();
+    }
+
+    public static function getLastRedirectInfo(){
+        return RedirectLink::order('id desc')->where(['is_delete' => 0])->field('id,redirect_link')->find();
     }
 
 }

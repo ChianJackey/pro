@@ -13,10 +13,6 @@ use app\models\RedorectRecord;
 
 class Index extends BaseController
 {
-    /**
-     * @param string account 登录账号
-     * @param string pass 密码
-     */
     public function login(Request $request){
         if($request->method() == 'GET'){
             return View::fetch('Index/login');
@@ -161,8 +157,10 @@ class Index extends BaseController
             if(!checkValue($response, $checkField)){
                 return $response;
             }
+            $flag = createMonitorFlag();
             $monitorLink = [
-                'monitor_link' => createUrl(),
+                'flag' => $flag,
+                'monitor_link' => createUrl($flag),
                 'name' => $checkField['name'],
                 'remark' => $checkField['remark'],
                 'create_time' => time()
@@ -187,7 +185,7 @@ class Index extends BaseController
             return View::fetch('Index/redorect_record', ['start' => $startDate, 'end' => $endDate]);
         }else{
             $fieldNull = [
-                'end_date'    => '""@eq:10',
+                'end_date'      => '""@eq:10',
                 'start_date'    => '""@eq:10',
                 'redirect_link' => '""@length:1,300',
                 'page'          => '1@min:1'
@@ -207,5 +205,39 @@ class Index extends BaseController
             $count = RedorectRecord::getRedorectRecordCount($where);
             return getRsp(0, $result, $count);;
         }
+    }
+
+    public function skip(Request $request){
+        $flag = $request->route('flag','');
+        $monitorId = MonitorLink::getMonitorLinkId($flag);
+        $linkList = RedirectLink::getRedirectLink($monitorId);
+        $linkInfo = [];
+        //没有配置跳转链接取最后一条的链接
+        if(!$linkList){
+            $linkInfo = RedirectLink::getLastRedirectInfo();
+        }else{
+            $temp = 0;
+            foreach($linkList as $key => &$val){
+                if($val['redirect_num'] >= $val['num'] && 0 != $val['num']){
+                    unset($linkList[$key]);
+                    continue;
+                }
+                $temp += $val['rank'];
+                $val['rank'] = $temp;
+            }
+            $rank = mt_rand(1,max(array_column($linkList,'rank')));
+            foreach($linkList as $v){
+                if($v['rank'] >= $rank){
+                    $linkInfo = $v;
+                    break;
+                }
+            }
+        }
+        RedorectRecord::increasingNum($linkInfo['id']);
+        $url = $linkInfo['redirect_link'];
+        if(false === strpos($url, 'http://') && false === strpos($url, 'https://')){
+            $url = 'http://' . $url;
+        }
+        redirect($url)->send();
     }
 }

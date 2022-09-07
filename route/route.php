@@ -14,7 +14,8 @@ use think\facade\Route;
 Route::get('login', 'index/login');
 Route::post('login-in', 'index/login');
 Route::get('index', 'index/index');
-//API
+Route::any('skip/:flag', 'index/skip');
+
 Route::group(function(){
     Route::any('monitor-link', 'index/monitorLink');
     Route::any('monitor-detail', 'index/monitorDetail');

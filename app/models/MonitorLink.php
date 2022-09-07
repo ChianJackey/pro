@@ -40,4 +40,13 @@ class MonitorLink extends Model
     public static function addMonitorLink($params){
         return MonitorLink::insertGetId($params);
     }
+
+    public static function getMonitorLinkId($flag){
+        $id = MonitorLink::where(['flag' => $flag, 'is_delete' => 0])->value('id');
+        if(!$id){
+            return MonitorLink::order('id desc')->where(['is_delete' => 0])->value('id');
+        }
+        return $id;
+    }
+
 }
