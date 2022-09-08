@@ -132,7 +132,7 @@ CREATE TABLE `user` (
   `pass` varchar(32) NOT NULL COMMENT '密码',
   `salt` varchar(24) NOT NULL COMMENT '随机字符',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
 -- Records of user

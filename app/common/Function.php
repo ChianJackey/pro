@@ -31,7 +31,7 @@ function createRandomString($length = 24) {
 }
 
 function createUrl($flag){
-    return env('DOMAIN','') . 'skip/' . $flag;
+    return env('DOMAIN','') . 'skip/' . $flag . '?type=eng&t='.time().'&etype=9stime=__TIME__&im=__IMEI__&an=__AndroidID__&ia=__IDFA__&uuid=__UUID__&oa=__OA__';
 }
 
 function createMonitorFlag(){
